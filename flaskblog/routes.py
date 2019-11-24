@@ -40,7 +40,8 @@ def before_request():
 @app.route("/")
 @app.route("/home")
 def home():
-	posts = Post.query.all()
+	page = request.args.get('page', 1, type=int)
+	posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
 	return render_template('home.html', posts=posts)
 
 @app.route("/about")
@@ -113,11 +114,9 @@ def account():
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    posts = [
-        {'author': user, 'body': 'Test post #1'},
-        {'author': user, 'body': 'Test post #2'}
-    ]
-    return render_template('user.html', user=user, posts=posts)
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.filter_by(user_id=user.id).paginate(page, 20, False)
+    return render_template('user.html', user=user, posts=posts.items)
 
 @app.route("/post/new", methods=['GET', 'POST'])
 @login_required
