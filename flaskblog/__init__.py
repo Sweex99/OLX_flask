@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
+from flask_admin import Admin
 import os
 
 app = Flask(__name__)
@@ -19,5 +20,13 @@ login_manager.login_message_category = 'info'
 migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
+
+import flaskblog.forms as views
+admin = Admin(app)
+#admin.add_view(views.HelloView(name='Hello'))
+
+from flask_admin.contrib.sqla import ModelView
+#admin.add_view(ModelView(views.User, db.session))
+admin.add_view(views.UserAdminView(views.User, db.session))
 
 from flaskblog import routes
