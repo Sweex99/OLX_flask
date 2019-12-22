@@ -1,7 +1,7 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, RadioField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flaskblog.models import User, CKTextAreaField
 from flask_admin.contrib.sqla import ModelView
@@ -57,6 +57,7 @@ class UpdateAccountForm(FlaskForm):
 class PostForm(FlaskForm):
 	title = StringField('Title', validators=[DataRequired()])
 	content = TextAreaField('Content', validators=[DataRequired()])
+	category = RadioField('Content', choices=[('Phone', 'Phones'), ('PC', 'PCs'),  ('Clothes', 'Clothes')])
 	submit = SubmitField('Post')
 
 class EditProfileForm(FlaskForm):
@@ -84,7 +85,7 @@ class UserAdminView(ModelView, ActionsMixin):
     column_exclude_list = ('password',)
     form_excluded_columns = ('password',)
     form_edit_rules = ('username', 'admin',)
-  
+
     def is_accessible(self):
         return current_user.is_authenticated and current_user.is_admin()
 

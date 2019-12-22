@@ -31,6 +31,22 @@
                     {{ form.content(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
+
+
+            <div class="form-group">
+                <p class='form-control-label'>Category</p>
+                {% if form.category.errors %}
+                    {{ form.category(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.category.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.category(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+
         </fieldset>
         <div class="form-group">
             {{ form.submit(class="btn btn-outline-info") }}

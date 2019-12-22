@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, abort
 from flaskblog import app, db, bcrypt
 from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, EditProfileForm, AdminUserCreateForm, AdminUserUpdateForm
-from flaskblog.models import User, Post
+from flaskblog.models import User, Post, Category, Order
 from flask_login import login_user, current_user, logout_user, login_required
 import os
 import secrets
@@ -28,7 +28,7 @@ def save_picture(form_picture):
 	path = os.path.join(app.root_path, 'static/profile_pics/'+current_user.username)
 	make_sure_path_exists(path)
 	picture_path = os.path.join(app.root_path, path, picture_fn)
-	
+
 	output_size = (125, 125)
 	i = Image.open(form_picture)
 	i.thumbnail(output_size)
@@ -49,9 +49,40 @@ def home():
 	posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
 	return render_template('home.html', posts=posts)
 
+@app.route("/category/<category_name>")
+def category_posts(category_name):
+	page = request.args.get('page', 1, type=int)
+	posts = Post.query.filter_by(category_id=Category.query.filter_by(category_name=category_name).first().id)
+	return render_template('category_posts.html', posts=posts)
+
+@app.route("/buy/<post_id>")
+@login_required
+def buy(post_id):
+
+		order = Order(current_user.id, post_id)
+		db.session.add(order)
+		db.session.commit()
+		return redirect(url_for('home'))
+
+@app.route("/my_orders")
+@login_required
+def my_orders():
+	posts = []
+	for order in current_user.orders:
+		posts.append(order.posts)
+
+	return render_template('my-order.html', posts = posts)
+
 @app.route("/about")
 def about():
 	return render_template('about.html', title='About')
+
+@app.route("/my_posts")
+@login_required
+def my_posts():
+	posts = Post.query.filter_by(user_id=current_user.id).all()
+	return render_template('my_posts.html', posts=posts)
+
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -128,7 +159,7 @@ def user(username):
 def new_post():
 	form = PostForm()
 	if form.validate_on_submit():
-		post = Post(title=form.title.data, content=form.content.data, author=current_user)
+		post = Post(title=form.title.data, content=form.content.data, user_id=current_user.id, category_id=Category.query.filter_by(category_name=form.category.data).first().id)
 		db.session.add(post)
 		db.session.commit()
 		flash('Your post has been creared!', 'success')
@@ -302,7 +333,7 @@ def user_delete_admin(id):
     column_exclude_list = ('password',)
     form_excluded_columns = ('password',)
     form_edit_rules = ('username', 'admin',)
-  
+
     def is_accessible(self):
         return current_user.is_authenticated() and current_user.is_admin()
 

@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block content %}
+  {% for post in posts %}
+  <div class="card mb-1">
+      <div class="card-header">
+        {{post.title}}
+        {% if post.author == current_user %}
+              <div class='float-right'>
+                <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('update_post', post_id=post.id) }}">Update</a>
+                <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+              </div>
+            {% endif %}
+      </div>
+      <div class="card-body">
+        <img class="rounded-circle account-img float-left" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
+        <p class="card-text align-left">{{post.content}}</p>
+
+      </div>
+      {% if post.author != current_user %}
+        <a href="{{ url_for('buy', post_id=post.id) }}" class="btn btn-primary">Order</a>
+      {% endif %}
+    </div>
+  {% endfor %}
+
+{% endblock content %}
